@@ -39,7 +39,11 @@ class DriverHomeScreen extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            _InfoCard(title: 'Today earnings', value: '₹0', color: Colors.blue),
+            _InfoCard(
+              title: 'Today earnings',
+              value: '₹1250.00',
+              color: Colors.blue,
+            ),
           ],
         ),
       ),

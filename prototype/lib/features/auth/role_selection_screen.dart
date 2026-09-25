@@ -18,8 +18,10 @@ class RoleSelectionScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(height:100),
+                const SizedBox(height: 100),
                 Container(
+                  width: 280,
+                  height: 200,
                   /* decoration: BoxDecoration(
                     color: Colors.red.shade50,
                     shape: BoxShape.circle,
@@ -33,13 +35,12 @@ class RoleSelectionScreen extends StatelessWidget {
                     ],
                   ), */
                   child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 16.0),
-                      child: Image.asset(
-                        'assets/logo.png',
-                        fit: BoxFit.contain,
-                      ),
+                    alignment: Alignment.center,
+                    // child: Padding(
+                    //   padding: const EdgeInsets.only(left: 16.0),
+                    child: Image.asset(
+                      'assets/logo.png',
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
@@ -101,7 +102,10 @@ class RoleSelectionScreen extends StatelessWidget {
 
                 const SizedBox(height: 80),
 
-                Text('Need help?',style:TextStyle(fontSize:20,color:Colors.black))
+                Text(
+                  'Need help?',
+                  style: TextStyle(fontSize: 20, color: Colors.black),
+                ),
               ],
             ),
           ),
