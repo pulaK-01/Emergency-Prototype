@@ -1,4 +1,4 @@
-import 'package:emergency_prototype/models/booking_model.dart';
+import 'package:medirapid/models/booking_model.dart';
 
 class BookingRepository {
   Future<List<BookingModel>> getBookings() async {

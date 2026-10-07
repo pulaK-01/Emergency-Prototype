@@ -25,12 +25,14 @@ class CustomButton2 extends StatelessWidget {
           style: GoogleFonts.lato(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         style: ElevatedButton.styleFrom(
+          elevation: 5,
           padding: const EdgeInsets.symmetric(vertical: 16),
           backgroundColor: Colors.blueAccent,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          shadowColor: Colors.blueAccent,
         ),
       ),
     );

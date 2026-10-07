@@ -1,35 +1,35 @@
-import 'package:flutter/material.dart';
+import 'package:medirapid/widgets/status_card.dart';
 
-class DriverStatusCard extends StatelessWidget {
+class DriverStatusCard extends StatusCard {
   const DriverStatusCard({
     super.key,
-    required this.title,
-    required this.value,
-    required this.color,
+    required super.title,
+    required super.message,
+    required super.icon,
+    required super.color,
   });
 
-  final String title;
-  final String value;
-  final Color color;
-
-  @override
+  /*   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: Colors.grey[200],
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: const TextStyle(fontSize: 16)),
+          Icon(icon, color: color),
+
+          Text(title, style: const TextStyle(fontSize: 20)),
+
           Text(
-            value,
+            message,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: color,
             ),
@@ -37,5 +37,5 @@ class DriverStatusCard extends StatelessWidget {
         ],
       ),
     );
-  }
+  } */
 }

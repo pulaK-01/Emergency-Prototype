@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class EmergencyButton extends StatelessWidget {
   const EmergencyButton({
@@ -22,9 +23,10 @@ class EmergencyButton extends StatelessWidget {
           color: Colors.red,
           boxShadow: [
             BoxShadow(
-              color: Colors.red.withValues(alpha: 0.5),
+              color: Colors.red.shade600.withValues(alpha: 0.5),
+              offset: Offset(0, 13),
               blurRadius: 20,
-              spreadRadius: 8,
+              spreadRadius: 9,
             ),
           ],
         ),
@@ -35,16 +37,38 @@ class EmergencyButton extends StatelessWidget {
                   strokeWidth: 5,
                 ),
               )
-            : const Center(
+            : Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.emergency, size: 80, color: Colors.white),
-                    SizedBox(height: 10),
+                    ShaderMask(
+                      blendMode: BlendMode.srcIn,
+                      shaderCallback: (bounds) {
+                        return const LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.white, Color(0x805FEC2B)],
+                          stops: [0.48, 1.0],
+                        ).createShader(bounds);
+                      },
+                      child: const Icon(
+                        Icons.emergency,
+                        size: 150,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            color: Color(0x805FEC2B),
+                            offset: Offset(0, 10),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 0),
                     Text(
-                      'HELP',
-                      style: TextStyle(
-                        fontSize: 32,
+                      'SOS',
+                      style: GoogleFonts.sora(
+                        fontSize: 48,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),

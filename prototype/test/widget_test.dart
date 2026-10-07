@@ -8,7 +8,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:emergency_prototype/main.dart';
+import 'package:medirapid/main.dart';
 
 void main() {
   testWidgets('Emergency app loads', (WidgetTester tester) async {

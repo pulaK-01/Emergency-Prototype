@@ -1,7 +1,10 @@
 import 'dart:async';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:flutter/material.dart';
+import 'package:medirapid/core/routes/app_routes.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:medirapid/features/patient/widgets/emergency_button.dart';
+import 'package:medirapid/services/location_service.dart';
 
 class PatientHomeScreen extends StatefulWidget {
   const PatientHomeScreen({super.key});
@@ -11,9 +14,11 @@ class PatientHomeScreen extends StatefulWidget {
 }
 
 class _PatientHomeScreenState extends State<PatientHomeScreen> {
+  final LocationService _locationService = LocationService();
+
   bool _isLoading = false;
   String _statusMessage =
-      'Are you in emergency? press the button above and help will reach youshortly.';
+      'Press the button above and help will reach you shortly.';
   Position? _currentLocation;
   String? _errorMessage;
 
@@ -27,37 +32,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
     });
 
     try {
-      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        if (!mounted) return;
-        setState(() {
-          _isLoading = false;
-          _statusMessage = 'Please enable location services';
-          _errorMessage = 'Location services are disabled';
-        });
-        return;
-      }
-
-      var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        if (!mounted) return;
-        setState(() {
-          _isLoading = false;
-          _statusMessage = 'Location permission denied';
-          _errorMessage = 'Allow location access to send emergency help';
-        });
-        return;
-      }
-
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 20),
-      ).timeout(const Duration(seconds: 25));
+      final position = await _locationService.getCurrentLocation();
 
       if (!mounted) return;
 
@@ -76,6 +51,27 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
           duration: Duration(seconds: 3),
         ),
       );
+    } on LocationServiceException catch (e) {
+      if (!mounted) return;
+      final (statusMessage, errorMessage) = switch (e.failure) {
+        LocationFailure.servicesDisabled => (
+          'Please enable location services',
+          'Location services are disabled',
+        ),
+        LocationFailure.permissionDenied => (
+          'Location permission denied',
+          'Allow location access to send emergency help',
+        ),
+        LocationFailure.permissionPermanentlyDenied => (
+          'Location permission permanently denied',
+          'Enable location access in your device settings',
+        ),
+      };
+      setState(() {
+        _isLoading = false;
+        _errorMessage = errorMessage;
+        _statusMessage = statusMessage;
+      });
     } on TimeoutException {
       if (!mounted) return;
       setState(() {
@@ -97,9 +93,21 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Patient Emergency'),
+        title: const Text(
+          'Emergency SOS',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.red.shade600,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            tooltip: 'Settings',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.patientSettings);
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: Center(
@@ -108,75 +116,35 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                GestureDetector(
-                  onTap: _isLoading ? null : _getExactLocation,
-                  child: Container(
-                    width: 250,
-                    height: 250,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.red,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.red.withValues(alpha: .6),
-                          blurRadius: 20,
-                          spreadRadius: 9,
-                        ),
-                      ],
+                const Column(
+                  children: [
+                    Text(
+                      'Are you in emergency?',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
                     ),
-                    child: _isLoading
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 5,
-                            ),
-                          )
-                        : Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                ShaderMask(
-                                  blendMode: BlendMode.srcIn,
-                                  shaderCallback: (bounds) {
-                                    return const LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        Colors.white,
-                                        Colors.white,
-                                        Color(0x805FEC2B),
-                                      ],
-                                      stops: [0.0, 0.58, 1.0],
-                                    ).createShader(bounds);
-                                  },
-                                  child: const Icon(
-                                    Icons.emergency,
-                                    size: 130,
-                                    color: Colors.white,
-                                    shadows: [
-                                      Shadow(
-                                        color: Color(0x805FEC2B),
-                                        offset: Offset(0, 10),
-                                        blurRadius: 8,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  'SOS',
-                                  style: GoogleFonts.sora(
-                                    fontSize: 42,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                  ),
+                    SizedBox(height: 1),
+                    Text(
+                      "Press the 'SOS' button below",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 50),
+                const SizedBox(height: 12),
+                EmergencyButton(
+                  onPressed: _getExactLocation,
+                  isLoading: _isLoading,
+                ),
+                const SizedBox(height: 40),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
@@ -226,29 +194,32 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Column(
-                            children: [
-                              const Text(
-                                '📍 Exact Location',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                          child: Center(
+                            child: Column(
+                              children: [
+                                const Text(
+                                  '📍Exact Location',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                'Lat: ${_currentLocation!.latitude.toStringAsFixed(6)}',
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                              Text(
-                                'Lng: ${_currentLocation!.longitude.toStringAsFixed(6)}',
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                              Text(
-                                'Accuracy: ${_currentLocation!.accuracy.toStringAsFixed(0)}m',
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                            ],
+
+                                const SizedBox(height: 5),
+                                Text(
+                                  'Lat: ${_currentLocation!.latitude.toStringAsFixed(6)}',
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                                Text(
+                                  'Lng: ${_currentLocation!.longitude.toStringAsFixed(6)}',
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                                Text(
+                                  'Accuracy: ${_currentLocation!.accuracy.toStringAsFixed(0)}m',
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
