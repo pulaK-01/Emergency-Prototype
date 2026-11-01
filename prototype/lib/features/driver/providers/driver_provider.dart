@@ -20,12 +20,11 @@ class DriverProvider extends ChangeNotifier {
   DateTime? _requestDeadline;
   String? _countdownRequestId;
   int _requestSecondsRemaining = 30;
+  int _demoRequestSequence = 1009;
 
   static final DriverProvider instance = DriverProvider._();
 
-  DriverProvider._() {
-    _incomingRequests.add(_demoRequest());
-  }
+  DriverProvider._();
 
   List<Trip> get incomingRequests => List.unmodifiable(_incomingRequests);
   List<Trip> get completedTrips => List.unmodifiable(_completedTrips);
@@ -45,12 +44,22 @@ class DriverProvider extends ChangeNotifier {
     (total, trip) => total + (trip.fare ?? 0.0),
   );
 
-  void addIncomingRequest(Trip trip) {
-    if (_incomingRequests.any((request) => request.id == trip.id)) return;
+  bool addIncomingRequest(Trip trip) {
+    if (!isOnline ||
+        isOnTrip ||
+        _incomingRequests.any((request) => request.id == trip.id)) {
+      return false;
+    }
     _incomingRequests.insert(0, trip);
     _lastRequestExpired = false;
     startRequestCountdown(trip);
     notifyListeners();
+    return true;
+  }
+
+  bool simulateDemoRequest() {
+    if (!isOnline || isOnTrip || _incomingRequests.isNotEmpty) return false;
+    return addIncomingRequest(_createDemoRequest());
   }
 
   void startRequestCountdown(Trip trip) {
@@ -77,12 +86,13 @@ class DriverProvider extends ChangeNotifier {
   }
 
   bool acceptRequest(Trip trip) {
-    if (isOnTrip ||
+    if (!isOnline ||
+        isOnTrip ||
         !_incomingRequests.any((request) => request.id == trip.id)) {
       return false;
     }
     _cancelRequestCountdown();
-    _incomingRequests.removeWhere((request) => request.id == trip.id);
+    _incomingRequests.clear();
     _activeTrip = trip;
     _tripStage = TripStage.navigatingToPickup;
     _tripStartedAt = DateTime.now();
@@ -163,6 +173,7 @@ class DriverProvider extends ChangeNotifier {
         fare: trip.distanceKm * 50,
         incidentType: trip.incidentType,
         patientCount: trip.patientCount,
+        isDemo: trip.isDemo,
       ),
     );
     _setStage(TripStage.completed);
@@ -177,9 +188,7 @@ class DriverProvider extends ChangeNotifier {
 
   void resetSession() {
     _cancelRequestCountdown();
-    _incomingRequests
-      ..clear()
-      ..add(_demoRequest());
+    _incomingRequests.clear();
     _completedTrips.clear();
     _activeTrip = null;
     _tripStage = null;
@@ -195,6 +204,13 @@ class DriverProvider extends ChangeNotifier {
   void toggleOnlineStatus() {
     if (isOnTrip) return;
     isOnline = !isOnline;
+    if (isOnline) {
+      simulateDemoRequest();
+      return;
+    }
+    _cancelRequestCountdown();
+    _incomingRequests.clear();
+    _lastRequestExpired = false;
     notifyListeners();
   }
 
@@ -210,9 +226,10 @@ class DriverProvider extends ChangeNotifier {
     _countdownRequestId = null;
   }
 
-  Trip _demoRequest() {
+  Trip _createDemoRequest() {
+    final requestNumber = _demoRequestSequence++;
     return Trip(
-      id: 'AMB-1009',
+      id: 'DEMO-$requestNumber',
       requestedAt: DateTime.now(),
       pickup: 'Avenue 45, North Block',
       destination: 'City General Hospital',
@@ -220,6 +237,7 @@ class DriverProvider extends ChangeNotifier {
       patientName: 'Aarav Sharma',
       distanceKm: 4.2,
       incidentType: 'Road Accident',
+      isDemo: true,
     );
   }
 }

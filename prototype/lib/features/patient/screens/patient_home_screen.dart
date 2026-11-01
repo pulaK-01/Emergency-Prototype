@@ -94,7 +94,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Emergency SOS',
+          'Are you in emergency ?',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.red.shade600,
@@ -119,17 +119,17 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                 const Column(
                   children: [
                     Text(
-                      'Are you in emergency?',
+                      "Press the 'SOS' button for help",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 22,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
                     ),
                     SizedBox(height: 1),
                     Text(
-                      "Press the 'SOS' button below",
+                      "An ambulance will be requested",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,

@@ -14,6 +14,7 @@ class Trip {
   final double? fare;
   final String incidentType;
   final int patientCount;
+  final bool isDemo;
 
   const Trip({
     required this.id,
@@ -27,6 +28,7 @@ class Trip {
     this.fare,
     this.incidentType = 'Medical Emergency',
     this.patientCount = 1,
+    this.isDemo = false,
   });
 
   bool get isCompleted => status == TripStatus.completed;
@@ -68,6 +70,3 @@ class Trip {
     }
   }
 }
-
-
-

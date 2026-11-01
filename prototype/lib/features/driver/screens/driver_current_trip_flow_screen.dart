@@ -5,7 +5,6 @@ import 'package:medirapid/core/routes/app_routes.dart';
 import 'package:medirapid/features/driver/models/trip_flow_model.dart';
 import 'package:medirapid/features/driver/models/trip_model.dart';
 import 'package:medirapid/features/driver/providers/driver_provider.dart';
-import 'package:medirapid/features/driver/widgets/driver_request_banner.dart';
 
 const _navy = Color(0xFF07152F);
 const _panel = Color(0xFF122441);
@@ -58,14 +57,6 @@ class _DriverCurrentTripFlowScreenState
             final hasActiveTrip = trip != null && stage != null;
             return Column(
               children: [
-                if (!_driver.isOnTrip && _driver.incomingRequests.isNotEmpty)
-                  DriverRequestBanner(
-                    requestCount: _driver.incomingRequests.length,
-                    onTap: () => Navigator.pushReplacementNamed(
-                      context,
-                      AppRoutes.driverDispatch,
-                    ),
-                  ),
                 Expanded(
                   child: !hasActiveTrip
                       ? _NoActiveTrip(

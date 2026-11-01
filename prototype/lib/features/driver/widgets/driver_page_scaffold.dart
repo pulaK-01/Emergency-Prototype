@@ -34,7 +34,10 @@ class DriverPageScaffold extends StatelessWidget {
     return AnimatedBuilder(
       animation: driver,
       builder: (context, child) {
-        final requestCount = driver.isOnTrip ? 0 : driver.incomingRequests.length;
+        final canReceiveRequests = driver.isOnline && !driver.isOnTrip;
+        final requestCount = canReceiveRequests
+            ? driver.incomingRequests.length
+            : 0;
         return Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.blueAccent,
@@ -59,6 +62,9 @@ class DriverPageScaffold extends StatelessWidget {
               if (requestCount > 0)
                 DriverRequestBanner(
                   requestCount: requestCount,
+                  isDemo: driver.incomingRequests.any(
+                    (request) => request.isDemo,
+                  ),
                   onTap: () {
                     if (selectedIndex != 1) {
                       Navigator.pushReplacementNamed(

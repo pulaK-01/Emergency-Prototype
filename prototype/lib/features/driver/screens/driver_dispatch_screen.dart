@@ -64,9 +64,16 @@ class _DriverDispatchScreenState extends State<DriverDispatchScreen> {
             );
           }
 
+          if (!_driver.isOnline) {
+            return const _DispatchEmptyState(offline: true);
+          }
+
           final requests = _driver.incomingRequests;
           if (requests.isEmpty) {
-            return _DispatchEmptyState(expired: _driver.lastRequestExpired);
+            return _DispatchEmptyState(
+              expired: _driver.lastRequestExpired,
+              onSimulateRequest: _driver.simulateDemoRequest,
+            );
           }
 
           return ListView(
@@ -78,13 +85,18 @@ class _DriverDispatchScreenState extends State<DriverDispatchScreen> {
                   color: const Color(0xFFDA1745),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.warning_amber_rounded, color: Colors.white),
-                    SizedBox(width: 10),
+                    const Icon(
+                      Icons.warning_amber_rounded,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(width: 10),
                     Text(
-                      'EMERGENCY BROADCAST',
-                      style: TextStyle(
+                      requests.first.isDemo
+                          ? 'DEMO EMERGENCY REQUEST'
+                          : 'EMERGENCY BROADCAST',
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.6,
@@ -299,9 +311,15 @@ class _AddressLine extends StatelessWidget {
 }
 
 class _DispatchEmptyState extends StatelessWidget {
-  const _DispatchEmptyState({required this.expired});
+  const _DispatchEmptyState({
+    this.expired = false,
+    this.offline = false,
+    this.onSimulateRequest,
+  });
 
   final bool expired;
+  final bool offline;
+  final VoidCallback? onSimulateRequest;
 
   @override
   Widget build(BuildContext context) {
@@ -312,23 +330,41 @@ class _DispatchEmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              expired ? Icons.timer_off_outlined : Icons.notifications_none,
+              offline
+                  ? Icons.wifi_off
+                  : expired
+                  ? Icons.timer_off_outlined
+                  : Icons.notifications_none,
               size: 56,
               color: Colors.blueGrey,
             ),
             const SizedBox(height: 16),
             Text(
-              expired ? 'Request Expired' : 'No New Requests',
+              offline
+                  ? 'You’re Offline'
+                  : expired
+                  ? 'Request Expired'
+                  : 'No New Requests',
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
-              expired
-                  ? 'This request was assigned to another available responder.'
+              offline
+                  ? 'Go online from Home to receive emergency requests.'
+                  : expired
+                  ? 'The request expired. Generate another sample request to continue the demo.'
                   : 'New emergency requests will appear here.',
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.black54),
             ),
+            if (onSimulateRequest != null) ...[
+              const SizedBox(height: 20),
+              FilledButton.icon(
+                onPressed: onSimulateRequest,
+                icon: const Icon(Icons.add_alert),
+                label: const Text('Simulate Demo Request'),
+              ),
+            ],
           ],
         ),
       ),
