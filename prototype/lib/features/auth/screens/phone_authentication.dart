@@ -220,7 +220,7 @@ class _PhoneAuthenticationScreenState extends State<PhoneAuthenticationScreen> {
                       } else {
                         Navigator.pushNamedAndRemoveUntil(
                           context,
-                          AppRoutes.driverHome,
+                          AppRoutes.driverVerification,
                           (route) => false,
                         );
                       }

@@ -28,137 +28,149 @@ class RoleSelectionScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Spacer(),
-                  SizedBox(
-                    width: 280,
-                    height: 200,
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Image.asset(
-                        'assets/logo.png',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 50),
-                  Text(
-                    'How Would You Like\nto Continue?',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.sora(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.brown.shade500,
-                    ),
-                  ),
-                  const SizedBox(height: 0),
-                  const Text(
-                    "Your role cannot be changed later.",
-                    style: TextStyle(fontSize: 20, color: Colors.black87),
-                  ),
-                  const SizedBox(height: 12),
-                  CustomButton1(
-                    label: 'I need Emergency Help',
-                    icon: Icons.medical_services,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const PhoneAuthenticationScreen(
-                            role: UserRole.patient,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  CustomButton2(
-                    label: "I'm an Ambulance Driver",
-                    icon: Icons.airport_shuttle_rounded,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const PhoneAuthenticationScreen(
-                            role: UserRole.driver,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-
-                  const Spacer(),
-
-                  // help button
-                  TextButton.icon(
-                    style: ButtonStyle(
-                      foregroundColor: WidgetStateProperty.all(Colors.white),
-                    ),
-                    iconAlignment: IconAlignment.end,
-                    label: const Text(
-                      'Need help',
-                      style: TextStyle(fontSize: 20),
-                    ),
-                    icon: const Icon(Icons.help_outlined),
-
-                    onPressed: () {
-                      showDialog<void>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Choose the role for your account'),
-                          content: const Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Patient',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                'Choose this if you may need emergency help.',
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                'Ambulance driver',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                "Choose this if you respond to emergency  as a driver.",
-                              ),
-                              SizedBox(height: 24),
-                              Icon(
-                                Icons.warning_amber_rounded,
-                                color: Colors.red,
-                              ),
-
-                              Text(
-                                "Your choice will be saved to your account and used to open the right home screen when you sign'in.",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text(
-                                'Got it',
-                                style: TextStyle(fontSize: 20),
-                              ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Spacer(),
+                        SizedBox(
+                          width: 280,
+                          height: 200,
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Image.asset(
+                              'assets/logo.png',
+                              fit: BoxFit.contain,
                             ),
-                          ],
+                          ),
                         ),
-                      );
-                    },
+                        const SizedBox(height: 50),
+                        Text(
+                          'How Would You Like\nto Continue?',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.sora(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.brown.shade500,
+                          ),
+                        ),
+
+                        const Text(
+                          "Your role cannot be changed later.",
+                          style: TextStyle(fontSize: 20, color: Colors.black87),
+                        ),
+                        const SizedBox(height: 24),
+                        CustomButton1(
+                          label: 'I need Emergency Help',
+                          icon: Icons.medical_services,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const PhoneAuthenticationScreen(
+                                  role: UserRole.patient,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        CustomButton2(
+                          label: "I'm an Ambulance Driver",
+                          icon: Icons.airport_shuttle_rounded,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const PhoneAuthenticationScreen(
+                                  role: UserRole.driver,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        const Spacer(),
+                        TextButton.icon(
+                          style: ButtonStyle(
+                            foregroundColor: WidgetStateProperty.all(
+                              Colors.white,
+                            ),
+                          ),
+                          iconAlignment: IconAlignment.end,
+                          label: const Text(
+                            'Need help',
+                            style: TextStyle(fontSize: 20),
+                          ),
+                          icon: const Icon(Icons.help_outlined),
+                          onPressed: () {
+                            showDialog<void>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text(
+                                  'Choose the role for your account',
+                                ),
+                                content: const Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Patient',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Choose this if you may need emergency help.',
+                                    ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      'Ambulance driver',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      "Choose this if you respond to emergency  as a driver.",
+                                    ),
+                                    SizedBox(height: 24),
+                                    Icon(
+                                      Icons.warning_amber_rounded,
+                                      color: Colors.red,
+                                    ),
+                                    Text(
+                                      "Your choice will be saved to your account and used to open the right home screen when you sign'in.",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text(
+                                      'Got it',
+                                      style: TextStyle(fontSize: 20),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 36),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
         ),
       ),

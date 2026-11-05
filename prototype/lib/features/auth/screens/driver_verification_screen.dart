@@ -2,6 +2,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:medirapid/core/routes/app_routes.dart';
+import 'package:medirapid/features/auth/models/driver_verification_document.dart';
+import 'package:medirapid/features/auth/providers/driver_verification_provider.dart';
+import 'package:medirapid/features/auth/widgets/driver_document_upload_tile.dart';
 
 class DriverVerificationScreen extends StatefulWidget {
   const DriverVerificationScreen({super.key});
@@ -15,7 +18,13 @@ class _DriverVerificationScreenState extends State<DriverVerificationScreen> {
   final _formKey = GlobalKey<FormState>();
   final _licenseNumberController = TextEditingController();
   final _vehicleRegistrationController = TextEditingController();
-  final Map<_DriverDocument, PlatformFile> _documents = {};
+  final _uppercaseInputFormatter = TextInputFormatter.withFunction(
+    (oldValue, newValue) => newValue.copyWith(
+      text: newValue.text.toUpperCase(),
+      composing: TextRange.empty,
+    ),
+  );
+  final Map<DriverVerificationDocument, PlatformFile> _documents = {};
   bool _isSubmitting = false;
 
   @override
@@ -25,7 +34,7 @@ class _DriverVerificationScreenState extends State<DriverVerificationScreen> {
     super.dispose();
   }
 
-  Future<void> _pickDocument(_DriverDocument document) async {
+  Future<void> _pickDocument(DriverVerificationDocument document) async {
     try {
       final file = await FilePicker.pickFile(
         type: FileType.custom,
@@ -52,7 +61,7 @@ class _DriverVerificationScreenState extends State<DriverVerificationScreen> {
     }
   }
 
-  void _removeDocument(_DriverDocument document) {
+  void _removeDocument(DriverVerificationDocument document) {
     setState(() => _documents.remove(document));
   }
 
@@ -65,7 +74,7 @@ class _DriverVerificationScreenState extends State<DriverVerificationScreen> {
   Future<void> _submitForReview() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final missingDocuments = _DriverDocument.values
+    final missingDocuments = DriverVerificationDocument.values
         .where((document) => !_documents.containsKey(document))
         .toList();
     if (missingDocuments.isNotEmpty) {
@@ -73,6 +82,7 @@ class _DriverVerificationScreenState extends State<DriverVerificationScreen> {
       return;
     }
 
+    await DriverVerificationProvider.instance.submitForReview();
     setState(() => _isSubmitting = true);
     await showDialog<void>(
       context: context,
@@ -85,8 +95,7 @@ class _DriverVerificationScreenState extends State<DriverVerificationScreen> {
         ),
         title: const Text('Documents submitted'),
         content: const Text(
-          'Your information is ready for review. Document verification '
-          'will be completed once the app is connected to its verification service.',
+          'Your verification request is pending. We’ll notify you after review.',
         ),
         actions: [
           FilledButton(
@@ -100,7 +109,7 @@ class _DriverVerificationScreenState extends State<DriverVerificationScreen> {
     if (!mounted) return;
     Navigator.pushNamedAndRemoveUntil(
       context,
-      AppRoutes.driverHome,
+      AppRoutes.driverVerificationPending,
       (route) => false,
     );
   }
@@ -108,6 +117,46 @@ class _DriverVerificationScreenState extends State<DriverVerificationScreen> {
   String? _requiredField(String? value, String label) {
     if (value == null || value.trim().isEmpty) {
       return 'Enter your $label';
+    }
+    return null;
+  }
+
+  String? _validateLicenseNumber(String? value) {
+    final requiredError = _requiredField(value, 'licence number');
+    if (requiredError != null) return requiredError;
+
+    final normalized = value!.trim();
+    if (!RegExp(r'^[A-Za-z0-9 -]+$').hasMatch(normalized)) {
+      return 'Use only letters, numbers, spaces, or hyphens.';
+    }
+
+    final compactLength = normalized
+        .replaceAll(RegExp(r'[\s-]'), '')
+        .length;
+    if (compactLength < 8 || compactLength > 20) {
+      return 'Licence number must contain 8–20 letters or numbers.';
+    }
+    return null;
+  }
+
+  String? _validateVehicleRegistrationNumber(String? value) {
+    final requiredError = _requiredField(
+      value,
+      'vehicle registration number',
+    );
+    if (requiredError != null) return requiredError;
+
+    final normalized = value!.trim().toUpperCase();
+    final compact = normalized.replaceAll(RegExp(r'[\s-]'), '');
+    final isStateRegistration = RegExp(
+      r'^[A-Z]{2}\d{1,2}[A-Z]{0,3}\d{1,4}$',
+    ).hasMatch(compact);
+    final isBharatRegistration = RegExp(
+      r'^\d{2}BH\d{4}[A-Z]{2}$',
+    ).hasMatch(compact);
+
+    if (!isStateRegistration && !isBharatRegistration) {
+      return 'Enter a valid Indian registration number, e.g. MH 12 AB 1234 or 22 BH 1234 AA.';
     }
     return null;
   }
@@ -148,8 +197,7 @@ class _DriverVerificationScreenState extends State<DriverVerificationScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Enter your vehicle details and attach clear copies of the '
-                  'required documents.',
+                  'Enter your vehicle details and attach clear copies of the required documents.',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
@@ -157,26 +205,27 @@ class _DriverVerificationScreenState extends State<DriverVerificationScreen> {
                 TextFormField(
                   controller: _licenseNumberController,
                   textCapitalization: TextCapitalization.characters,
+                  inputFormatters: [_uppercaseInputFormatter],
                   decoration: const InputDecoration(
                     labelText: 'Driving licence number',
                     hintText: 'Enter licence number',
                     prefixIcon: Icon(Icons.badge_outlined),
                     border: OutlineInputBorder(),
                   ),
-                  validator: (value) => _requiredField(value, 'licence number'),
+                  validator: _validateLicenseNumber,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _vehicleRegistrationController,
                   textCapitalization: TextCapitalization.characters,
+                  inputFormatters: [_uppercaseInputFormatter],
                   decoration: const InputDecoration(
                     labelText: 'Vehicle registration number',
                     hintText: 'Enter ambulance registration number',
                     prefixIcon: Icon(Icons.airport_shuttle_outlined),
                     border: OutlineInputBorder(),
                   ),
-                  validator: (value) =>
-                      _requiredField(value, 'vehicle registration number'),
+                  validator: _validateVehicleRegistrationNumber,
                 ),
                 const SizedBox(height: 24),
                 Row(
@@ -191,9 +240,11 @@ class _DriverVerificationScreenState extends State<DriverVerificationScreen> {
                       ),
                     ),
                     Text(
-                      '$uploadedCount/${_DriverDocument.values.length}',
+                      '$uploadedCount/${DriverVerificationDocument.values.length}',
                       style: TextStyle(
-                        color: uploadedCount == _DriverDocument.values.length
+                        color:
+                            uploadedCount ==
+                                DriverVerificationDocument.values.length
                             ? Colors.green
                             : Colors.blueGrey,
                         fontWeight: FontWeight.w600,
@@ -206,11 +257,11 @@ class _DriverVerificationScreenState extends State<DriverVerificationScreen> {
                   'PDF, JPG, or PNG · maximum 10 MB each',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
-                const SizedBox(height: 12),
-                for (final document in _DriverDocument.values)
+                const SizedBox(height: 24),
+                for (final document in DriverVerificationDocument.values)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10),
-                    child: _DocumentUploadTile(
+                    child: DriverDocumentUploadTile(
                       document: document,
                       file: _documents[document],
                       onTap: () => _pickDocument(document),
@@ -218,29 +269,10 @@ class _DriverVerificationScreenState extends State<DriverVerificationScreen> {
                     ),
                   ),
                 const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.amber.shade300),
-                  ),
-                  child: const Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.info_outline, color: Colors.amber),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Files are selected on this device only. Online upload '
-                          'and document review require a verification service.',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+
                 const SizedBox(height: 24),
                 FilledButton.icon(
+                  iconAlignment: IconAlignment.end,
                   onPressed: _isSubmitting ? null : _submitForReview,
                   icon: _isSubmitting
                       ? const SizedBox(
@@ -263,84 +295,6 @@ class _DriverVerificationScreenState extends State<DriverVerificationScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-enum _DriverDocument {
-  drivingLicence(
-    title: 'Driving licence',
-    subtitle: 'A valid licence for ambulance driving',
-    icon: Icons.badge_outlined,
-  ),
-  vehicleRegistration(
-    title: 'Vehicle registration certificate',
-    subtitle: 'Registration for the ambulance vehicle',
-    icon: Icons.airport_shuttle_outlined,
-  ),
-  vehicleInsurance(
-    title: 'Vehicle insurance',
-    subtitle: 'Current insurance document',
-    icon: Icons.shield_outlined,
-  ),
-  ambulancePermit(
-    title: 'Ambulance permit / fitness certificate',
-    subtitle: 'Valid permit or fitness certification',
-    icon: Icons.health_and_safety_outlined,
-  );
-
-  const _DriverDocument({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-  });
-
-  final String title;
-  final String subtitle;
-  final IconData icon;
-}
-
-class _DocumentUploadTile extends StatelessWidget {
-  const _DocumentUploadTile({
-    required this.document,
-    required this.file,
-    required this.onTap,
-    required this.onRemove,
-  });
-
-  final _DriverDocument document;
-  final PlatformFile? file;
-  final VoidCallback onTap;
-  final VoidCallback onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    final isUploaded = file != null;
-    return Card(
-      margin: EdgeInsets.zero,
-      child: ListTile(
-        onTap: onTap,
-        leading: Icon(
-          isUploaded ? Icons.description_outlined : document.icon,
-          color: isUploaded ? Colors.green : Colors.blueAccent,
-        ),
-        title: Text(
-          document.title,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        subtitle: Text(
-          isUploaded ? file!.name : document.subtitle,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: isUploaded
-            ? IconButton(
-                tooltip: 'Remove ${document.title}',
-                onPressed: onRemove,
-                icon: const Icon(Icons.close, color: Colors.redAccent),
-              )
-            : const Icon(Icons.upload_file_outlined),
       ),
     );
   }

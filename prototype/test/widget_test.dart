@@ -13,7 +13,7 @@ import 'package:medirapid/main.dart';
 void main() {
   testWidgets('Emergency app loads', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const EmergencyApp());
+    await tester.pumpWidget(const MediRapid());
 
     // Verify that the app is built
     expect(find.byType(MaterialApp), findsOneWidget);
