@@ -19,7 +19,7 @@ class DriverProvider extends ChangeNotifier {
   Timer? _requestTimer;
   DateTime? _requestDeadline;
   String? _countdownRequestId;
-  int _requestSecondsRemaining = 30;
+  int _requestSecondsRemaining = 60;
   int _demoRequestSequence = 1009;
 
   static final DriverProvider instance = DriverProvider._();
@@ -66,8 +66,8 @@ class DriverProvider extends ChangeNotifier {
     if (_countdownRequestId == trip.id) return;
     _requestTimer?.cancel();
     _countdownRequestId = trip.id;
-    _requestDeadline = DateTime.now().add(const Duration(seconds: 30));
-    _requestSecondsRemaining = 30;
+    _requestDeadline = DateTime.now().add(const Duration(seconds: 60));
+    _requestSecondsRemaining = 60;
     _requestTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       final deadline = _requestDeadline;
       if (deadline == null) {

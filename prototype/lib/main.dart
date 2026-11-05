@@ -16,7 +16,7 @@ import 'package:medirapid/features/patient/screens/patient_settings_screen.dart'
 void main() {
   runApp(
     MediRapid(
-      initialRoute: AppRoutes.driverVerificationPending,
+      initialRoute: AppRoutes.patientHome,
       routes: {
         AppRoutes.roleSelection: (_) => const RoleSelectionScreen(),
         AppRoutes.patientHome: (_) => const PatientHomeScreen(),

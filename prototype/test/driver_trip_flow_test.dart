@@ -21,6 +21,7 @@ void main() {
     expect(driver.addIncomingRequest(offlineRequest), isFalse);
     driver.toggleOnlineStatus();
     expect(driver.incomingRequests, hasLength(1));
+    expect(driver.requestSecondsRemaining, 60);
     final request = driver.incomingRequests.single;
     expect(request.isDemo, isTrue);
     driver.acceptRequest(request);
