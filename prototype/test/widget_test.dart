@@ -8,14 +8,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:medirapid/main.dart';
+import 'package:medirapid/app.dart';
 
 void main() {
   testWidgets('Emergency app loads', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MediRapid());
+    await tester.pumpWidget(
+      const MediRapid(initialRoute: '/', routes: {'/': _testHome}),
+    );
 
     // Verify that the app is built
     expect(find.byType(MaterialApp), findsOneWidget);
   });
 }
+
+Widget _testHome(BuildContext context) => const Scaffold();
